@@ -1,5 +1,7 @@
 # SpeakerPy
 
+# **ВНИМАНИЕ: этот файл изменялся совсем чуточку, руки пока не дошли полностью прочитать этот файл и переписать всё под форк, так что извините**
+
 `SpeakerPy` - это Python-библиотека для синтеза речи, основанная на моделях Silero Text-to-Speech.
 
 ![logo](https://raw.githubusercontent.com/denisxab/speakerpy/main/docs/source/_static/logo315x318.png)
@@ -122,7 +124,7 @@ options:
 
 Lib Speak включает классы `Speaker` и `SpeakerBase` для синтеза речи с использованием моделей Silero. Основные методы класса `Speaker`:
 
-1. `speak`: произнесение текста.
+1. `speak`: ~~произнесение текста.~~ Теперь это потоковая передача звука в байтах, что позволяет использовать звук где-то еще (например, для трансляции в Discord)
 2. `to_mp3`: конвертация текста в аудиофайл MP3.
 
 #### Пример использования функции speak
@@ -130,10 +132,39 @@ Lib Speak включает классы `Speaker` и `SpeakerBase` для син
 ```python
 from lib_speak import Speaker
 from lib_sl_text import SeleroText
+import sounddevice as sd
+import queue
+import threading
+import numpy as np
+
+speaker = Speaker(model_id="ru_v3", language="ru", speaker="baya", device="cpu")
+
+def text_to_speech(txt: str):
+    audio_queue = queue.Queue()
+
+    def audio_player():
+        with sd.OutputStream(samplerate=48000, channels=1, dtype='float32') as stream:
+            while True:
+                speech_chunk = audio_queue.get()
+                if speech_chunk is None:
+                    break
+                audio_array = np.frombuffer(speech_chunk, dtype=np.float32)
+                stream.write(audio_array)
+
+    player_thread = threading.Thread(target=audio_player, daemon=True)
+    player_thread.start()
+
+    for chunk in speaker.speak(text=txt, sample_rate=48000, speed=1.1, volume=0.8):
+        audio_queue.put(chunk)
+
+    audio_queue.put(None)
+    player_thread.join()
 
 text = SeleroText("Пример текста для синтеза речи")
-speaker = Speaker(model_id="ru_v3", language="ru", speaker="aidar", device="cpu")
-speaker.speak(text=text, sample_rate=48000, speed=1.0)
+text_to_speech(text)
+
+#p.s. я не проверял этот код, просто куски из своего проекта сюда напихал в надежде, что у вас заработает, так что удачи.
+
 ```
 
 #### Пример использования функции to_mp3
