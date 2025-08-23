@@ -9,6 +9,7 @@ from num2words import num2words
 from transliterate import translit
 
 nltk.download("punkt")
+nltk.download("punkt_tab")
 
 
 def nltk_remove_other_model_but_russian(directory: str | pathlib.Path):
