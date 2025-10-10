@@ -9,10 +9,9 @@ import soundfile
 import torch
 from silero import silero_tts
 import numpy as np
-from sympy.physics.units import liter
 
-from venSpeakerPy.lib_helper import timeit
-from venSpeakerPy.lib_sl_text import SeleroText
+from lib_helper import timeit
+from lib_sl_text import SeleroText
 
 
 class SpeakerBase:
@@ -24,7 +23,7 @@ class SpeakerBase:
             model_id,
             language: Literal["ru", "en"],
             speaker: Literal["aidar", "baya", "kseniya", "xenia", "random"],
-            device=liter("cpu"),
+            device="cpu",
             ) -> None:
         self.language = language
         self.model_id = model_id
@@ -242,12 +241,11 @@ if __name__ == '__main__':
     speaker = Speaker(model_id="ru_v3", language="ru", speaker="baya", device="cpu")
     while True:
         text = input('Text: ')
-        for i in '1234567890':
-            text = text.replace(i, '')
         text = text.replace('ё', 'е')
+
         if text.startswith('!w '):
             text = text.replace('!w ', '')
-            speaker.to_wav(text=text, sample_rate=48000, speed=1.1, volume=0.7, name_text='output', audio_dir='output')
+            speaker.to_wav(text=text.text, sample_rate=48000, speed=1.1, volume=0.7, name_text='output', audio_dir='output')
         else:
-            for chunk in speaker.speak(text=text, sample_rate=48000, speed=1.1, volume=0.7):
+            for chunk, text in speaker.speak(text=text.text, sample_rate=48000, speed=1.1, volume=0.7):
                 audio_queue.put(chunk)
