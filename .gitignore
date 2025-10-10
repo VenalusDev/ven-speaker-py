@@ -1,12 +1,4 @@
-venv
-.vagrant
-__pycache__/
-.mypy_cache
-dist
+.idea
+__pycache__
 latest_silero_models.yml
-mp3/*
-books/*
-models
-.ipynb_checkpoints
-docs/docs/build
-.vscode
+output

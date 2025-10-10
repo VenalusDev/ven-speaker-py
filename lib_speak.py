@@ -9,18 +9,10 @@ import soundfile
 import torch
 from silero import silero_tts
 import numpy as np
+from sympy.physics.units import liter
 
 from venSpeakerPy.lib_helper import timeit
 from venSpeakerPy.lib_sl_text import SeleroText
-
-
-def fade_out(audio: np.ndarray, sample_rate: int, duration_sec=0.2):
-    fade_len = int(sample_rate * duration_sec)
-    if fade_len > len(audio):
-        fade_len = len(audio)
-    fade_curve = np.linspace(1, 0, fade_len)
-    audio[-fade_len:] *= fade_curve
-    return audio
 
 
 class SpeakerBase:
@@ -32,8 +24,8 @@ class SpeakerBase:
             model_id,
             language: Literal["ru", "en"],
             speaker: Literal["aidar", "baya", "kseniya", "xenia", "random"],
-            device="cpu",
-    ) -> None:
+            device=liter("cpu"),
+            ) -> None:
         self.language = language
         self.model_id = model_id
         # Модель
@@ -41,7 +33,7 @@ class SpeakerBase:
             model_id=model_id,
             language=language,
             device=device,
-        )
+            )
         # Голос
         self.speaker = speaker
 
@@ -67,7 +59,7 @@ class SpeakerBase:
                 "vulkan",
                 "mps",
             ] = "cpu",
-    ):
+            ):
         """
         Инициализация ИИ модели
 
@@ -79,7 +71,7 @@ class SpeakerBase:
 
     def _synthesize_text(
             self, text: str, sample_rate: int, put_accent: bool = True, put_yo: bool = True
-    ) -> torch.Tensor:
+            ) -> torch.Tensor:
         """Синтезировать текст"""
         audio: torch.Tensor = self.model.apply_tts(
             text=text,
@@ -87,7 +79,7 @@ class SpeakerBase:
             sample_rate=sample_rate,
             put_accent=put_accent,
             put_yo=put_yo,
-        )
+            )
         return audio
 
     def _speak(
@@ -97,7 +89,7 @@ class SpeakerBase:
             audio: torch.Tensor,
             sample_rate: int,
             speed: float = 1.0,
-    ):
+            ):
         """Озвучить текст
 
         :param audio: Аудио
@@ -118,12 +110,14 @@ class Speaker(SpeakerBase):
             self,
             text: str,
             sample_rate: int,
-            speed=1.0,
+            speed: float = 1.0,
             *,
             volume: float = 1.0,
             put_accent: bool = True,
             put_yo: bool = False,
-    ) -> Generator[bytes, None, None]:
+            normalize: bool = False,
+            limiting: bool = False,
+            ) -> Generator[tuple[bytes, str], None, None]:
         """
         Генерация и озвучка текста с поддержкой тегов <long:x:duration>
 
@@ -131,10 +125,14 @@ class Speaker(SpeakerBase):
         :param sample_rate: Частота дискретизации
         :param speed: Скорость воспроизведения
         :param volume: Громкость (0.0 - 2.0)
+        :param put_accent: Автоматическая постановка ударения
+        :param put_yo: Автоматическая постановка буквы ё
+        :param normalize: Нормализация звука (вряд ли вообще понадобится, но пусть будет)
+        :param limiting: Ограничение звука (вряд ли вообще понадобится, но пусть будет)
         :return: Чанки аудио в формате bytes
         """
         if not (0.0 <= volume <= 2.0):
-            raise ValueError("Параметр volume должен быть в диапазоне от 0.0 до 1.0")
+            raise ValueError("Параметр volume должен быть в диапазоне от 0.0 до 2.0")
         sl_text = SeleroText(text, to_language=self.language)
 
         # Генерация чанков с выводом байтов по мере готовности
@@ -145,19 +143,21 @@ class Speaker(SpeakerBase):
                 sample_rate=sample_rate,
                 put_accent=put_accent,
                 put_yo=put_yo,
-            )
+                )
             scaled_audio = (audio.numpy() / 5 * volume).astype(np.float32)
 
-            target_length = int(len(scaled_audio) / speed)
-            adjusted_audio = resample_poly(scaled_audio, up=100, down=int(100 * speed))
+            adjusted_audio = resample_poly(scaled_audio, up=100, down=int(100 * speed)) if speed != 1 else scaled_audio
 
-            if len(adjusted_audio) > 0:
-                yield adjusted_audio.tobytes()
+            normal = self.normalize(adjusted_audio) if normalize else adjusted_audio
+            limited = self.limiter(normal) if limiting else normal
+
+            if len(limited) > 0:
+                yield adjusted_audio.tobytes(), _chunk_text
 
                 # Если это последний чанк — добавим тишину
             if i == len(chunks) - 1:
                 silence = np.zeros(int(sample_rate * 0.15), dtype=np.float32)  # 150 мс тишины
-                yield silence.tobytes()
+                yield silence.tobytes(), ""
 
     @timeit
     def to_wav(
@@ -169,7 +169,7 @@ class Speaker(SpeakerBase):
             speed: float = 1.0,
             volume: float = 1.0,
             put_accent=True
-    ) -> pathlib.Path:
+            ) -> pathlib.Path:
         """
         Синтезировать и сохранить звук в WAV файл
 
@@ -194,14 +194,7 @@ class Speaker(SpeakerBase):
             print("Cache___Wav: 0 \t| ", output_file)
             return output_file
 
-        full_audio = b''.join(self.speak(
-            text=text,
-            sample_rate=sample_rate,
-            speed=speed,
-            volume=volume,
-            put_accent=put_accent,
-            put_yo=True,
-        ))
+        full_audio = b''.join(self.speak(text=text, sample_rate=sample_rate, speed=speed, volume=volume, put_accent=put_accent, put_yo=True))
 
         # Сохраняем как WAV
         with soundfile.SoundFile(output_file, 'w', samplerate=sample_rate, channels=1, subtype='PCM_16') as f:
@@ -210,6 +203,16 @@ class Speaker(SpeakerBase):
 
         print("Build___Wav: 0 \t| ", output_file)
         return output_file
+
+    def normalize(self, audio, target=0.95):
+        peak = np.max(np.abs(audio))
+        if peak > 0:
+            audio = audio / peak * target
+        return audio
+
+    def limiter(self, audio, threshold=0.9):
+        audio = np.clip(audio, -threshold, threshold)
+        return audio / threshold
 
 
 if __name__ == '__main__':
@@ -220,13 +223,18 @@ if __name__ == '__main__':
 
 
     def audio_player():
-        with sd.OutputStream(samplerate=48000, channels=1, dtype='float32') as stream:
-            while True:
-                speech_chunk = audio_queue.get()
-                if speech_chunk is None:
-                    break
-                audio_array = np.frombuffer(speech_chunk, dtype=np.float32)
-                stream.write(audio_array)
+        try:
+            with sd.OutputStream(samplerate=48000, channels=1, dtype='float32') as stream:
+                while True:
+                    speech_chunk = audio_queue.get()
+                    if speech_chunk is None:
+                        break
+                    audio_array = np.frombuffer(speech_chunk, dtype=np.float32)
+                    stream.write(audio_array)
+        except KeyboardInterrupt:
+            print("Stop speaker")
+        finally:
+            sd.stop()
 
 
     player_thread = threading.Thread(target=audio_player, daemon=True)
