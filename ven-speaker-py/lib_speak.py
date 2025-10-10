@@ -62,7 +62,7 @@ class SpeakerBase:
         """
         Инициализация ИИ модели
 
-        model_id: Доступные модели https://github.com/snakers4/silero-models/blob/master/models.yml
+        model_id: Доступные модели https://github.com/snakers4/silero-models/blob/master/models.yml (четверку тут использовать не получится)
         """
         _device = torch.device(device)
         _model, *_any = silero_tts(language=language, speaker=model_id, device=_device)

@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "ven-speaker-py"
+version = "0.1.3"
+description = "Форк библиотеки speakerpy с потоковой TTS, генерацией чанков аудио и улучшениями"
+authors = ["Venalus <Venalusdev@mail.ru>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/VenalusDev/ven-speaker-py"
+repository = "https://github.com/VenalusDev/ven-speaker-py"
+keywords = ["TTS", "speech", "speakerpy", "python", "audio", "streaming"]
+
+packages = [
+    { include = "ven-speaker-py" }
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^1.24"
+torch = "^2.2"
+scipy = "^1.11"
+sounddevice = "^0.4"
+soundfile = "^0.12"
+silero = "^0.4"
+nltk = "^3.9"
+num2words = "^0.5"
+transliterate = "^1.10"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4"
+
+[build-system]
+requires = ["setuptools>=65.5.1", "wheel", "numpy>=2.0"]
+build-backend = "setuptools.build_meta"

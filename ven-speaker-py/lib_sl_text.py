@@ -15,7 +15,7 @@ nltk.download("punkt_tab")
 def nltk_remove_other_model_but_russian(directory: str | pathlib.Path):
     """Удалить все языки кроме русского
 
-    directory: Путь к директорию в которой искать файлы
+    directory: Путь к директории в которой искать файлы
     """
 
     extension = ".pickle"  # замените на нужное расширение
@@ -35,7 +35,7 @@ class SeleroText:
     который вы хотите синтезировать в голос
     """
 
-    #: Флаг который используется для чтения модели nltk единожды
+    #: Флаг, который используется для чтения модели nltk единожды
     IF_INIT = False
     #: Путь для хранения моделей nltk
     download_dir = pathlib.Path(__file__).parent.parent / "models/nltk_store"
@@ -83,7 +83,7 @@ class SeleroText:
     #
     #
     def _normal(self) -> str:
-        """Преобразовать текст в подходящий формат для синтезаци
+        """Преобразовать текст в подходящий формат для синтеза
 
         to_language: В какой язык сделать тралит
         """
@@ -94,7 +94,7 @@ class SeleroText:
         self.text = self._nums_to_text()
 
     def _transcription(self) -> str:
-        """Транскрипция иностранного языка (Типо hello->хелоо)"""
+        """Транскрипция иностранного языка (Типа hello->хелоо)"""
         self.text = translit(self.text, self.to_language)
 
     def _nums_to_text(self) -> str:
