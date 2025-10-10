@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "speakerpy"
 version = "0.1.2"
-description = "`SpeakerPy` - это Python-библиотека для синтеза речи, основанная на моделях Silero Text-to-Speech."
-authors = ["Denis Kustov <pro-progerkustov@yandex.ru>"]
+description = "`SpeakerPy` - это Python-библиотека для синтеза речи, основанная на моделях Silero Text-to-Speech. `venSpeakerPy` - ответвление, взятое на доработку и универсализацию проекта"
+authors = ["Venalus <venalusplay@yandex.ru>", "Denis Kustov <pro-progerkustov@yandex.ru>"]
 readme = "README.md"
-homepage = "https://github.com/denisxab/speakerpy"
-repository = "https://github.com/denisxab/speakerpy"
+homepage = "https://github.com/VenalusDev/ven-speaker-py"
+repository = "https://github.com/VenalusDev/ven-speaker-py"
 keywords=[
     "синтез речи"
     ,"text-to-speech"
