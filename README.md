@@ -31,7 +31,7 @@ ven-speaker-py — это Python-библиотека для синтеза ре
 `ven-speaker-py` можно установить с помощью pip:
 
 ```bash
-pip install venspeakerpy
+pip install ven-speaker-py
 ```
 
 ## 🛠️ Основные возможности
