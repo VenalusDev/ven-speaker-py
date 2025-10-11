@@ -1,8 +1,7 @@
 from setuptools import setup, find_packages
-
 setup(
-    name="ven-speaker-py",
-    version="0.1.3",
+    name="venSpeakerPy",
+    version="0.1.1",
     author="VenalusDev",
     author_email="Venalusdev@mail.ru",
     description="Python TTS package using Silero models for Russian language",

@@ -1,16 +1,16 @@
 [tool.poetry]
-name = "ven-speaker-py"
-version = "0.1.3"
+name = "venSpeakerPy"
+version = "0.1.1"
 description = "Форк библиотеки speakerpy с потоковой TTS, генерацией чанков аудио и улучшениями"
 authors = ["Venalus <Venalusdev@mail.ru>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/VenalusDev/ven-speaker-py"
 repository = "https://github.com/VenalusDev/ven-speaker-py"
-keywords = ["TTS", "speech", "speakerpy", "python", "audio", "streaming"]
+keywords = ["TTS", "speech", "speaker", "python", "audio", "streaming"]
 
 packages = [
-    { include = "ven-speaker-py" }
+    { include = "venSpeakerPy" }
 ]
 
 
