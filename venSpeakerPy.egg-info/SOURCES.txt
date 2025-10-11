@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+venSpeakerPy/__init__.py
+venSpeakerPy/lib_helper.py
+venSpeakerPy/lib_sl_text.py
+venSpeakerPy/lib_speak.py
+venSpeakerPy.egg-info/PKG-INFO
+venSpeakerPy.egg-info/SOURCES.txt
+venSpeakerPy.egg-info/dependency_links.txt
+venSpeakerPy.egg-info/requires.txt
+venSpeakerPy.egg-info/top_level.txt
