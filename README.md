@@ -55,20 +55,19 @@ Lib Speak включает классы `Speaker` и `SpeakerBase` для син
 `ven-speaker-py` можно установить с помощью pip:
 
 ```bash
-pip install ven-speaker-py
+pip install venSpeakerPy
 ```
 
 #### 📄 Пример использования функции speak
 
 ```python
-from lib_speak import Speaker
-from lib_sl_text import SeleroText
+from venSpeakerPy import lib_speak
 import sounddevice as sd
 import queue
 import threading
 import numpy as np
 
-speaker = Speaker(model_id="ru_v3", language="ru", speaker="baya", device="cpu")
+speaker = lib_speak.Speaker(model_id="ru_v3", language="ru", speaker="baya", device="cpu")
 
 def text_to_speech(txt: str):
     audio_queue = queue.Queue()
@@ -85,16 +84,13 @@ def text_to_speech(txt: str):
     player_thread = threading.Thread(target=audio_player, daemon=True)
     player_thread.start()
 
-    for chunk, text in speaker.speak(text=text.text, sample_rate=48000, speed=1.1, volume=0.7):
+    for chunk, text in speaker.speak(text=txt, sample_rate=48000, speed=1.1, volume=0.7):
         audio_queue.put(chunk)
 
     audio_queue.put(None)
     player_thread.join()
 
-text = SeleroText("Пример текста для синтеза речи")
-text_to_speech(text)
-
-#p.s. я не проверял этот код, просто куски из своего проекта сюда напихал в надежде, что у вас заработает, так что удачи.
+text_to_speech("Пример текста для синтеза речи")
 
 ```
 
