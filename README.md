@@ -1,131 +1,156 @@
-# ven-speaker-py
+# venSpeakerPy
 
-**Форк библиотеки `speakerpy` с модификациями и улучшениями для потоковой работы с аудио и TTS.**
+Python-библиотека для синтеза русской речи с помощью моделей Silero. Поддерживает потоковую выдачу PCM-чанков, сохранение речи в WAV, постоянный дисковый кеш и выбор CPU/CUDA.
 
-![logo](https://raw.githubusercontent.com/denisxab/speakerpy/main/docs/source/_static/logo315x318.png)
+## Возможности
 
+- Потоковая генерация аудио: чанки можно сразу передавать в аудиопоток.
+- Постоянный LRU-кеш синтезированных фрагментов. Повторные реплики читаются с диска, в том числе после перезапуска.
+- Предварительный прогрев часто используемых реплик через `warm_cache()`.
+- Профиль `lisya`: голос Silero `baya` со скоростью `1.1`, если параметр `speed` не задан.
+- Автоматический выбор CUDA при наличии CUDA-сборки PyTorch и совместимого GPU; иначе используется CPU.
+- Управление скоростью, громкостью, нормализованной скоростью и паузами после пунктуации.
+- Сохранение результата в WAV.
 
-## 🔹 Описание
+## Установка
 
-ven-speaker-py — это Python-библиотека для синтеза речи с модификациями:
-
-- Потоковая передача аудио в байтовом виде.
-- Исправленная функция ~to_mp3~->`to_wav`.
-- Поддержка гибкой настройки скорости, громкости и sample rate.
-- Постепенно добавляются новые функции и улучшения под конкретные задачи.
-
-Библиотека подходит для создания голосовых приложений, озвучивания текста в реальном времени и интеграции с другими проектами.
-
-
-## Особенности и преимущества SpeakerPy
-
-- **Транскрипция чисел и английских слов**: SpeakerPy способен озвучивать числа и английские слова через транскрипцию.
-- **Синтез больших объемов текста**: SpeakerPy может синтезировать большие объемы текста без проблем.
-- **Корректное деление текста на куски**: благодаря использованию библиотеки nltk, SpeakerPy корректно делит большие тексты на предложения.
-- **Кеширование синтезированного текста**: SpeakerPy синтезирует и хранит текст по кускам, что позволяет кешировать уже ранее синтезированный текст и избежать повторного синтезирования. После первой генерации все последующие обычно занимают менее четверти секунды (имеется в виду не полная генерация, а момент, когда начинает зачитываться речь) на обычном процессоре!
-- **Работа в автономном режиме**: SpeakerPy синтезирует звук локально, без подключения к интернету, что позволяет использовать его в автономном режиме.
-- **Сохранение синтезированного текста в MP3**: SpeakerPy предоставляет возможность сохранять синтезированный текст в формате MP3.
-
-## 🛠️ Основные возможности
-
-- **Преобразование текста в речь.**
-- **Потоковая генерация аудио чанков.**
-- **Поддержка сохранения в различные форматы, включая mp3.**
-- **Настройка скорости, громкости и sample rate.**
-- **Интеграция в голосовые боты и приложения реального времени.**
-
-### 🚀 Системные требования
-
-- 2 ГБ ОЗУ
-- Наличие процессора :D
-
-## 💡 Основные компоненты
-
-Проект состоит из двух основных компонентов: Lib Speak и Lib SL Text.
-
-### Lib Speak
-
-Lib Speak включает классы `Speaker` и `SpeakerBase` для синтеза речи с использованием моделей Silero. Основные методы класса `Speaker`:
-
-1. `speak`: ~~произнесение текста.~~ Теперь это потоковая передача звука в байтах, что позволяет использовать звук где-то еще (например, для трансляции в Discord)
-2. `to_wav`: конвертация текста в аудиофайл wav.
-
-## ⚙️ Установка через pip
-
-`ven-speaker-py` можно установить с помощью pip:
+Установить опубликованную версию из PyPI:
 
 ```bash
-pip install venSpeakerPy
+python -m pip install venSpeakerPy
 ```
 
-#### 📄 Пример использования функции speak
+Для разработки клонируйте репозиторий и установите его в editable-режиме:
+
+```bash
+git clone https://github.com/VenalusDev/ven-speaker-py.git
+cd ven-speaker-py
+python -m pip install -e ".[test]"
+```
+
+## Системные требования
+
+- Python 3.11 или новее. Проверенная конфигурация — Windows x64 и Python 3.13.
+- Процессор: наличие процессора :D (CPU x64; видеокарта не обязательна).
+- Рекомендуется от 4 ГБ оперативной памяти. Для длинных текстов и одновременной работы других приложений понадобится больше.
+- Место на диске для PyTorch, Silero-модели и кеша. Лимит аудиокеша по умолчанию — 512 МБ. CUDA-сборка PyTorch требует несколько гигабайт свободного места на время установки.
+- Аудиоустройство требуется для прямого воспроизведения. Если приложение само обрабатывает PCM-байты, аудиоустройство не обязательно.
+- Интернет нужен при первой загрузке Silero-модели и данных токенизатора NLTK. После загрузки компонентов синтез выполняется локально.
+
+NVIDIA GPU и CUDA-сборка PyTorch опциональны. На Windows установите CUDA-сборку PyTorch после библиотеки. Проверенная конфигурация — PyTorch 2.14.1 с CUDA 13.0:
+
+```powershell
+python -m pip install --upgrade "torch==2.14.1" --index-url https://download.pytorch.org/whl/cu130 --extra-index-url https://pypi.org/simple
+```
+
+Проверьте доступность CUDA:
+
+```bash
+python -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU')"
+```
+
+`device="auto"` выбирает CUDA, если она доступна, или CPU в противном случае. Для принудительного выбора передайте `device="cuda"` или `device="cpu"`.
+
+## Быстрый старт
 
 ```python
-from venSpeakerPy import lib_speak
-import sounddevice as sd
-import queue
-import threading
+from venSpeakerPy import Speaker
+
+speaker = Speaker(
+    model_id="ru_v3",
+    language="ru",
+    speaker="lisya",
+    device="auto",
+)
+
+for audio_bytes, text_chunk in speaker.speak(
+    "Привет, чат! Как дела?",
+    sample_rate=48_000,
+):
+    # audio_bytes — mono PCM float32; передайте байты в свой аудиоплеер.
+    print(text_chunk)
+```
+
+Генератор возвращает пары `(audio_bytes, text_chunk)`. Для воспроизведения через `sounddevice` держите `OutputStream` открытым между сообщениями:
+
+```python
 import numpy as np
+import sounddevice as sd
 
-speaker = lib_speak.Speaker(model_id="ru_v3", language="ru", speaker="baya", device="cpu")
-
-def text_to_speech(txt: str):
-    audio_queue = queue.Queue()
-
-    def audio_player():
-        with sd.OutputStream(samplerate=48000, channels=1, dtype='float32') as stream:
-            while True:
-                speech_chunk = audio_queue.get()
-                if speech_chunk is None:
-                    break
-                audio_array = np.frombuffer(speech_chunk, dtype=np.float32)
-                stream.write(audio_array)
-
-    player_thread = threading.Thread(target=audio_player, daemon=True)
-    player_thread.start()
-
-    for chunk, text in speaker.speak(text=txt, sample_rate=48000, speed=1.1, volume=0.7):
-        audio_queue.put(chunk)
-
-    audio_queue.put(None)
-    player_thread.join()
-
-text_to_speech("Пример текста для синтеза речи")
-
+with sd.OutputStream(samplerate=48_000, channels=1, dtype="float32", blocksize=0) as stream:
+    for audio_bytes, _ in speaker.speak("Привет, чат!", sample_rate=48_000):
+        audio = np.frombuffer(audio_bytes, dtype=np.float32)
+        if audio.size:
+            stream.write(audio)
 ```
 
-#### Пример использования функции to_wav
+В корне проекта есть интерактивный пример: `python test_speaker.py`. Он принимает текст с клавиатуры, использует GPU автоматически и хранит кеш в локальной папке `tts-cache/`.
+
+## Скорость и паузы
+
+`speed` меняет темп воспроизведения вместе с высотой голоса. Для `lisya` по умолчанию используется `speed=1.1`; явно переданный `speed` переопределяет профиль.
+
+`norm_speed` меняет длительность с помощью WSOLA, стараясь сохранить высоту и тембр исходной записи. Например, `norm_speed=1.1` ускоряет речь, а `norm_speed=0.9` замедляет. Сильное изменение темпа может давать слышимые артефакты.
+
+`comma_pause_ms` и `sentence_pause_ms` добавляют тишину после запятых и знаков конца предложения. По умолчанию паузы равны нулю:
 
 ```python
-from lib_speak import Speaker
-
-text = SeleroText("Пример текста для синтеза речи")
-speaker = Speaker(model_id="ru_v3", language="ru", speaker="aidar", device="cpu")
-speaker.to_wav(text=text.text, sample_rate=48000, speed=1.0, volume=1.0, name_text='output', audio_dir='output')
+for audio_bytes, _ in speaker.speak(
+    "Привет, чат! Спасибо за сообщение.",
+    sample_rate=48_000,
+    norm_speed=1.1,
+    comma_pause_ms=80,
+    sentence_pause_ms=180,
+):
+    ...
 ```
 
-### Lib SL Text
+Для управления паузами фраза синтезируется по фрагментам, разделённым пунктуацией. Это позволяет независимо вставлять тишину после знаков.
 
-Lib SL Text содержит класс `SeleroText` для обработки текста перед синтезом речи. Основной метод класса `SeleroText`:
+## Постоянный кеш и частые реплики
 
-1. `chunk`: разделение текста на блоки.
-
-#### Использование класса SeleroText
+По умолчанию кеш хранится в `~/.cache/venSpeakerPy/audio`, его лимит — 512 МБ. Путь и объём можно настроить при создании `Speaker`:
 
 ```python
-text = SeleroText("Привет, мир!", to_language="ru")
+speaker = Speaker(
+    model_id="ru_v3",
+    language="ru",
+    speaker="lisya",
+    device="auto",
+    cache_dir="./tts-cache",
+    cache_size_mb=1024,
+)
 ```
 
-Разделение текста на куски с помощью метода `chunk()`:
+Кешируются результаты синтеза фрагментов, разделённых пунктуацией. Ключ записи учитывает модель, язык, голос, устройство, текст фрагмента, частоту дискретизации и параметры ударения. Скорость и громкость применяются после чтения кеша, поэтому не создают копии записи. При повторном доступе запись перемещается в конец LRU-очереди; при достижении лимита вытесняются давно не использовавшиеся файлы. Значение `cache_size_mb=0` отключает запись в кеш.
+
+Для Twitch и других сценариев с повторяющимися репликами можно заранее синтезировать часто используемые фразы:
 
 ```python
-for chunk in text.chunk():
-    print(chunk)
+frequent_replies = [
+    "Привет, чат!",
+    "Спасибо за сообщение!",
+    "Я тебя услышала.",
+]
+prepared_fragments = speaker.warm_cache(frequent_replies, sample_rate=48_000)
+print(f"Проверено фрагментов: {prepared_fragments}")
 ```
 
-## Ресурсы и ссылки
+`warm_cache()` пропускает повторный синтез записей, которые уже есть на диске. Новые предложения не собираются из слов или токенов: кеш переиспользует только совпавшие аудиофрагменты, а новые фрагменты синтезируются Silero.
 
-- <a href="https://github.com/snakers4/silero-models/blob/master/models.yml" target="_new">Silero Models на GitHub</a>
-- <a href="https://www.sphinx-doc.org/" target="_new">Sphinx</a>
-- <a href="https://github.com/readthedocs/sphinx_rtd_theme" target="_new">Sphinx RTD Theme</a>
-- <a href="https://readthedocs.org/" target="_new">Read the Docs</a>
+## Сохранение в WAV
+
+```python
+wav_path = speaker.to_wav(
+    text="Привет, чат!",
+    name_text="greeting",
+    sample_rate=48_000,
+    audio_dir="output",
+    norm_speed=1.1,
+)
+print(wav_path)
+```
+
+## Лицензия
+
+MIT. См. файл [LICENSE](LICENSE).

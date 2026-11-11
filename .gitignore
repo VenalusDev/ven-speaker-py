@@ -1,4 +1,31 @@
-.idea
-__pycache__
+# Python bytecode and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Build and package artifacts
+build/
+dist/
+*.egg-info/
+
+# Test, type-checker and linter output
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local IDE settings
+.idea/
+.vscode/
+
+# Runtime audio, model and tokenizer caches
+output/
+tts-cache/
+.cache/
+models/nltk_store/
 latest_silero_models.yml
-output
