@@ -39,3 +39,6 @@ Repository = "https://github.com/VenalusDev/ven-speaker-py"
 
 [tool.setuptools.packages.find]
 include = ["venSpeakerPy*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
