@@ -1,35 +1,41 @@
-[tool.poetry]
-name = "venSpeakerPy"
-version = "0.1.1"
-description = "Форк библиотеки speakerpy с потоковой TTS, генерацией чанков аудио и улучшениями"
-authors = ["Venalus <Venalusdev@mail.ru>"]
-license = "MIT"
-readme = "README.md"
-homepage = "https://github.com/VenalusDev/ven-speaker-py"
-repository = "https://github.com/VenalusDev/ven-speaker-py"
-keywords = ["TTS", "speech", "speaker", "python", "audio", "streaming"]
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
 
-packages = [
-    { include = "venSpeakerPy" }
+[project]
+name = "venSpeakerPy"
+version = "0.2.0"
+description = "Форк библиотеки speakerpy с потоковой TTS, генерацией чанков аудио и улучшениями"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Venalus", email = "Venalusdev@mail.ru" }]
+keywords = ["tts", "text-to-speech", "silero", "russian", "audio", "streaming"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10,<2.0",
+    "sounddevice>=0.4.7",
+    "soundfile>=0.12.1",
+    "torch>=2.1,<3.0",
+    "nltk>=3.9,<4.0",
+    "num2words>=0.5,<0.6",
+    "transliterate>=1.10.2",
+    "silero>=0.4",
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=8,<9"]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-numpy = "^1.24"
-torch = "^2.2"
-scipy = "^1.11"
-sounddevice = "^0.4"
-soundfile = "^0.12"
-silero = "^0.4"
-nltk = "^3.9"
-num2words = "^0.5"
-transliterate = "^1.10"
+[project.urls]
+Homepage = "https://github.com/VenalusDev/ven-speaker-py"
+Repository = "https://github.com/VenalusDev/ven-speaker-py"
 
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.4"
-
-[build-system]
-requires = ["setuptools>=65.5.1", "wheel", "numpy>=2.0"]
-build-backend = "setuptools.build_meta"
+[tool.setuptools.packages.find]
+include = ["venSpeakerPy*"]
