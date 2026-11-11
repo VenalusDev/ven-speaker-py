@@ -2,9 +2,6 @@
 
 import sys
 
-import numpy as np
-import sounddevice as sd
-
 from venSpeakerPy import Speaker
 
 
@@ -21,6 +18,18 @@ WARM_PHRASES = (
 
 
 def main() -> int:
+    try:
+        import numpy as np
+        import sounddevice as sd
+    except (ImportError, OSError) as exc:
+        print(
+            "Интерактивное воспроизведение требует установленных numpy, sounddevice "
+            "и системной библиотеки PortAudio.",
+            file=sys.stderr,
+        )
+        print(exc, file=sys.stderr)
+        return 1
+
     print("Загружаю Silero TTS модель (ru_v3, lisya, auto device)...")
     try:
         speaker = Speaker(

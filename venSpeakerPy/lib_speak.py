@@ -6,7 +6,6 @@ import time
 from typing import Generator, Iterable, Literal
 
 import numpy as np
-import sounddevice
 import soundfile
 import torch
 from scipy.signal import resample_poly
@@ -82,6 +81,14 @@ class SpeakerBase:
         )
 
     def _speak(self, th_name: int, text: str, audio: torch.Tensor, sample_rate: int, speed: float = 1.0):
+        try:
+            import sounddevice
+        except (ImportError, OSError) as exc:
+            raise RuntimeError(
+                "Direct playback requires sounddevice and the system PortAudio library; "
+                "PCM chunk generation does not."
+            ) from exc
+
         playback_rate = sample_rate * speed
         with self._th_lock_speak:
             sounddevice.play(audio, samplerate=playback_rate)
